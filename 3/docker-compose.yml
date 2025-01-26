@@ -1,0 +1,11 @@
+services:
+  db:
+    image: 'postgres:15.6'
+    environment:
+      POSTGRES_DB: 'web-lr-db'
+      POSTGRES_USER: 'www'
+      POSTGRES_PASSWORD: 'gos_tayna'
+    volumes:
+      - ./db/data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
