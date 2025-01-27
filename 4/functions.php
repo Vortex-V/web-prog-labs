@@ -1,5 +1,7 @@
 <?php
 
+use JetBrains\PhpStorm\NoReturn;
+
 if (!function_exists('renderView')) {
     function renderView(string $viewName, array $params = []): string
     {
@@ -24,7 +26,7 @@ if (!function_exists('endPage')) {
     {
         $content = ob_get_clean();
         $result = renderView('layout', compact('content'));
-        send($result);
+        sendHtml($result);
     }
 }
 
@@ -52,13 +54,46 @@ if (!function_exists('redirect')) {
 }
 
 if (!function_exists('send')) {
-    function send(string $data, int $status = 200): void
+    #[NoReturn] function send(string $data = '', int $status = 200): void
+    {
+        ob_start();
+        http_response_code($status);
+        header('Content-type: application/json');
+        echo $data;
+        ob_end_flush();
+        exit();
+    }
+}
+
+if (!function_exists('sendHtml')) {
+    #[NoReturn] function sendHtml(string $data, int $status = 200): void
     {
         ob_start();
         http_response_code($status);
         header('Content-type: text/html; charset=utf-8');
         echo $data;
         ob_end_flush();
+        exit();
+    }
+}
+
+if (!function_exists('jsonEncode')) {
+    /**
+     * @throws JsonException
+     */
+    function jsonEncode(array $value = []): string
+    {
+        return json_encode($value, JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE);
+    }
+}
+
+if (!function_exists('jsonDecode')) {
+    /**
+     * @throws JsonException
+     */
+    function jsonDecode(string $value = ''): array
+    {
+        return json_decode($value, true, 512, JSON_THROW_ON_ERROR);
     }
 }
 
