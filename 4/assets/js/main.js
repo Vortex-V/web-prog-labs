@@ -2,7 +2,6 @@ window.addEventListener('load', function () {
     axios.defaults.baseURL = 'http://localhost:8080/api';
 
     const App = function () {
-        const form = document.querySelector('.js--search-form');
         const categoryIdSelect = document.getElementById('search-category_id');
         const brandIdSelect = document.getElementById('search-brand_id');
 
@@ -27,18 +26,26 @@ window.addEventListener('load', function () {
         });
         productSaveButton.addEventListener('click', function () {
             let id = productSaveButton.getAttribute('data-product-id') || false;
+            const data = {
+                name: productNameInput.value,
+                price: productPriceInput.value,
+                category_id: productCategoryIdSelect.value,
+                brand_id: productBrandIdSelect.value
+            };
             if (id) {
-                axios.post('/products/update.php', {
-                    name: productNameInput.value,
-                    price: productPriceInput.value,
-                    category_id: productCategoryIdSelect.value,
-                    brand_id: productBrandIdSelect.value
-                })
+                axios.post(`/products/update.php?id=${id}`, data)
                     .then(function (result) {
-                        //TODO
+                        if (result.status === 200) {
+                            loadProducts();
+                        }
                     });
             } else {
-
+                axios.post(`/products/store.php`, data)
+                    .then(function (result) {
+                        if (result.status === 200) {
+                            loadProducts();
+                        }
+                    });
             }
         });
 
@@ -66,29 +73,29 @@ window.addEventListener('load', function () {
                         const row = document.createElement('tr');
                         addCell(row, product.name);
                         addCell(row, product.price);
-                        addCell(row, `<button class='js--product-edit-button' data-product-id="${product.id}">Редактировать</button>`)
-                        addCell(row, `<button class='js--product-delete-button data-product-id="${product.id}'>Удалить</button>`)
+                        addCell(row, `<button class="js--product-edit-button" data-product-id="${product.id}">Редактировать</button>`)
+                        addCell(row, `<button class="js--product-delete-button" data-product-id="${product.id}">Удалить</button>`)
                         tableBody.append(row);
                     }
 
                     placeholder.style.display = 'none';
+                    document.querySelectorAll('.js--product-edit-button').forEach(function (button) {
+                        button.addEventListener('click', function () {
+                            showProductForm(button.getAttribute('data-product-id'));
+                        })
+                    });
+                    document.querySelectorAll('.js--product-delete-button').forEach(function (button) {
+                        button.addEventListener('click', function () {
+                            console.log(button, button.getAttribute('data-product-id'))
+                            deleteProduct(button.getAttribute('data-product-id'));
+                        })
+                    });
                 });
 
             function addCell(row, content) {
                 const cell = row.insertCell();
                 cell.innerHTML = content;
             }
-
-            document.querySelectorAll('.js--product-edit-button').forEach(function (button) {
-               button.addEventListener('click', function () {
-                   showProductForm(button.getAttribute('data-product-id'));
-               })
-            });
-            document.querySelectorAll('.js--product-delete-button').forEach(function (button) {
-                button.addEventListener('click', function () {
-                    deleteProduct(button.getAttribute('data-product-id'));
-                })
-            });
         }
 
         function showProductForm(id = null) {
@@ -113,9 +120,9 @@ window.addEventListener('load', function () {
         function deleteProduct(id) {
             productForm.parentElement.style.display = 'none';
 
-            axios.post(`products/delete?id=${id}`)
+            axios.post(`products/delete.php?id=${id}`)
                 .then(function (result) {
-                    if (result !== 200) {
+                    if (result.status !== 200) {
                         alert(result.data);
                         return;
                     }
@@ -135,9 +142,8 @@ window.addEventListener('load', function () {
                     const data = result.data;
 
                     for (const [id, name] of Object.entries(data)) {
-                        const option = new Option(name, id);
-                        categoryIdSelect.append(option);
-                        productCategoryIdSelect.append(option);
+                        categoryIdSelect.append(new Option(name, id));
+                        productCategoryIdSelect.append(new Option(name, id));
                     }
                 });
         }
@@ -153,9 +159,8 @@ window.addEventListener('load', function () {
                     const data = result.data;
 
                     for (const [id, name] of Object.entries(data)) {
-                        const option = new Option(name, id);
-                        brandIdSelect.append(option);
-                        productBrandIdSelect.append(option);
+                        brandIdSelect.append(new Option(name, id));
+                        productBrandIdSelect.append(new Option(name, id));
                     }
                 });
         }

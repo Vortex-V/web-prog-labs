@@ -5,7 +5,7 @@ startPage();
 <h1>Магазин техники</h1>
 
 <div class="mb-2">
-    <form class="js--search-form"
+    <form
           style="max-width: 250px">
         <div class="df jcb mb-1">
             <label for="search-category_id">Категория</label>

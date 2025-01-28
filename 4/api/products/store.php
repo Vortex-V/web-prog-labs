@@ -5,7 +5,7 @@ declare(strict_types=1);
 require '../../functions.php';
 
 $attributes = ['name', 'price', 'category_id', 'brand_id'];
-$post = array_filter($_POST + array_fill_keys($attributes, false));
+$post = array_filter(jsonDecode(file_get_contents('php://input')) + array_fill_keys($attributes, false));
 if (empty($post) || count($post) < count($attributes)) {
     send('Ошибка входных данных', 403);
 }

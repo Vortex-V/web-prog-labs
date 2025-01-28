@@ -6,7 +6,6 @@ require '../../functions.php';
 
 $attributes = ['id'];
 $get = array_filter($_GET + array_fill_keys($attributes, false));
-
 if (empty($get)) {
     send('Ошибка входных данных', 403);
 }
@@ -17,13 +16,13 @@ $stmt = db()->prepare(/** @lang PostgreSQL */
     where id = :id"
 );
 $stmt->execute(['id' => $get['id']]);
-if ($stmt->fetchObject()->count === 0) {
+if ($stmt->fetchColumn() === 0) {
     send('Продукт не найден.', 404);
 }
+unset($stmt);
 
 $stmt = db()->prepare(/** @lang PostgreSQL */
-    "delete from products
-    where id = :id"
+    "delete from products where id = :id"
 );
 $stmt->execute(['id' => $get['id']]);
 

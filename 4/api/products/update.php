@@ -5,7 +5,7 @@ declare(strict_types=1);
 require '../../functions.php';
 
 $attributes = ['name', 'price', 'category_id', 'brand_id'];
-$post = array_filter($_POST + array_fill_keys($attributes, false));
+$post = array_filter(jsonDecode(file_get_contents('php://input')) + array_fill_keys($attributes, false));
 $get = array_filter($_GET + array_fill_keys(['id'], false));
 if (empty($post) || empty($get) || count($post) < count($attributes)) {
     send('Ошибка входных данных', 403);
@@ -46,11 +46,21 @@ if ($stmt->fetchObject()->count === 0) {
 unset($stmt);
 
 $stmt = db()->prepare(/** @lang PostgreSQL */
-    "insert into products 
-    (name, price, category_id, brand_id)
-    values (:name, :price, :category_id, :brand_id)")
-    ->execute(array_intersect_key($post, array_flip($attributes)));
+    "update products 
+    set 
+        name = :name, 
+        price = :price, 
+        category_id = :category_id, 
+        brand_id = :brand_id
+    where id = :id");
+$stmt->bindValue('id', $get['id']);
+$stmt->execute(array_merge(
+    array_intersect_key($post, array_flip($attributes)),
+    [
+        'id' => $get['id'],
+    ]
+));
 
 unset($stmt);
 
-redirect('index.php');
+send();

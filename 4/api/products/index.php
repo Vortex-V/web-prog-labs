@@ -35,11 +35,11 @@ if (!empty($conditions)) {
 
 $stmt = db()->prepare($queryString);
 
-
 $stmt->execute($valuesToBind);
 $data = $stmt->fetchAll(PDO::FETCH_ASSOC);
 $data = array_reduce($data, function (array $carry, array $item) {
     $carry[$item['id']] = $item;
     return $carry;
 }, []);
+
 send(jsonEncode($data));
